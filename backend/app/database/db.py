@@ -1,10 +1,15 @@
 from sqlalchemy import create_engine
+
 from sqlalchemy.orm import sessionmaker
+
 from sqlalchemy.ext.declarative import declarative_base
 
-DATABASE_URL = "mysql+pymysql://root:password@localhost/robovest"
+DATABASE_URL = "mysql+pymysql://root:rahul@localhost/robovest"
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    echo=True
+)
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -13,3 +18,14 @@ SessionLocal = sessionmaker(
 )
 
 Base = declarative_base()
+
+# DATABASE SESSION
+def get_db():
+
+    db = SessionLocal()
+
+    try:
+        yield db
+
+    finally:
+        db.close()
