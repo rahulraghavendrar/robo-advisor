@@ -7,7 +7,7 @@ from sqlalchemy import (
 )
 
 from sqlalchemy.orm import relationship
-
+from app.services.market_service import get_stock_price
 from app.database.db import Base
 
 class Portfolio(Base):

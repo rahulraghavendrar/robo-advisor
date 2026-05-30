@@ -1,9 +1,16 @@
 import yfinance as yf
 
-def get_stock_price(symbol:str):
+
+def get_stock_price(symbol: str):
 
     stock = yf.Ticker(symbol)
 
-    data = stock.history(period="1d")
+    history = stock.history(period="1d")
 
-    return data["Close"].iloc[-1]
+    if history.empty:
+
+        return None
+
+    return float(
+        history["Close"].iloc[-1]
+    )

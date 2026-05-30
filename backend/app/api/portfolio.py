@@ -8,11 +8,12 @@ from app.models.portfolio import Portfolio
 from app.schemas.portfolio_schema import PortfolioCreate
 from app.schemas.portfolio_update_schema import PortfolioUpdate
 
+from app.services.market_service import get_stock_price
+
 router = APIRouter(
     prefix="/portfolio",
     tags=["Portfolio"]
 )
-
 
 # ADD STOCK
 @router.post("/add")
@@ -38,7 +39,7 @@ def add_stock(
     }
 
 
-# GET ALL STOCKS
+# GET PORTFOLIO
 @router.get("/")
 def get_portfolio(
     db: Session = Depends(get_db)
@@ -51,7 +52,7 @@ def get_portfolio(
     return portfolio
 
 
-# UPDATE STOCK POSITION
+# UPDATE STOCK
 @router.put("/update/{portfolio_id}")
 def update_stock(
     portfolio_id: int,
@@ -141,4 +142,24 @@ def portfolio_summary(
         ),
 
         "shares": total_shares
+    }
+
+
+# LIVE STOCK PRICE
+@router.get("/price/{symbol}")
+def get_live_price(symbol: str):
+
+    price = get_stock_price(symbol)
+
+    if price is None:
+
+        return {
+            "error": "Symbol not found"
+        }
+
+    return {
+
+        "symbol": symbol,
+
+        "price": round(price, 2)
     }
