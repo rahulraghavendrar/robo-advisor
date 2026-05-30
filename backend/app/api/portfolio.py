@@ -254,3 +254,64 @@ def portfolio_valuation(
 
         "holdings": portfolio_data
     }
+
+
+# DASHBOARD ANALYTICS
+@router.get("/dashboard")
+def dashboard_data(
+    db: Session = Depends(get_db)
+):
+
+    holdings = db.query(
+        Portfolio
+    ).all()
+
+    total_positions = len(
+        holdings
+    )
+
+    total_invested = 0
+    total_current = 0
+
+    for stock in holdings:
+
+        current_price = get_stock_price(
+            stock.symbol
+        )
+
+        if current_price:
+
+            total_invested += (
+                stock.shares *
+                stock.average_price
+            )
+
+            total_current += (
+                stock.shares *
+                current_price
+            )
+
+    return {
+
+        "positions":
+            total_positions,
+
+        "invested":
+            round(
+                total_invested,
+                2
+            ),
+
+        "current":
+            round(
+                total_current,
+                2
+            ),
+
+        "profit":
+            round(
+                total_current -
+                total_invested,
+                2
+            )
+    }
