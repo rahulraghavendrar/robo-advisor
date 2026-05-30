@@ -15,6 +15,7 @@ router = APIRouter(
     tags=["Portfolio"]
 )
 
+
 # ADD STOCK
 @router.post("/add")
 def add_stock(
@@ -162,4 +163,94 @@ def get_live_price(symbol: str):
         "symbol": symbol,
 
         "price": round(price, 2)
+    }
+
+
+# PORTFOLIO VALUATION
+@router.get("/valuation")
+def portfolio_valuation(
+    db: Session = Depends(get_db)
+):
+
+    holdings = db.query(
+        Portfolio
+    ).all()
+
+    portfolio_data = []
+
+    total_invested = 0
+    total_current = 0
+
+    for stock in holdings:
+
+        current_price = get_stock_price(
+            stock.symbol
+        )
+
+        if current_price is None:
+            continue
+
+        invested = (
+            stock.shares *
+            stock.average_price
+        )
+
+        current = (
+            stock.shares *
+            current_price
+        )
+
+        pnl = current - invested
+
+        portfolio_data.append({
+
+            "symbol": stock.symbol,
+
+            "shares": stock.shares,
+
+            "avg_price": stock.average_price,
+
+            "current_price": round(
+                current_price,
+                2
+            ),
+
+            "invested": round(
+                invested,
+                2
+            ),
+
+            "current_value": round(
+                current,
+                2
+            ),
+
+            "profit_loss": round(
+                pnl,
+                2
+            )
+        })
+
+        total_invested += invested
+        total_current += current
+
+    return {
+
+        "total_invested": round(
+            total_invested,
+            2
+        ),
+
+        "current_value": round(
+            total_current,
+            2
+        ),
+
+        "profit_loss": round(
+            total_current -
+            total_invested,
+            2
+        ),
+
+        "holdings": portfolio_data
     }
