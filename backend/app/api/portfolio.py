@@ -23,8 +23,25 @@ def add_stock(
     db: Session = Depends(get_db)
 ):
 
+    symbol = data.symbol.strip().upper()
+
+    if symbol == "":
+        return {
+            "error": "Symbol required"
+        }
+
+    if data.shares <= 0:
+        return {
+            "error": "Shares must be greater than 0"
+        }
+
+    if data.average_price <= 0:
+        return {
+            "error": "Average price must be greater than 0"
+        }
+
     portfolio = Portfolio(
-        symbol=data.symbol,
+        symbol=symbol,
         shares=data.shares,
         average_price=data.average_price,
         user_id=1
@@ -71,6 +88,18 @@ def update_stock(
 
         return {
             "error": "Stock not found"
+        }
+
+    if data.shares <= 0:
+
+        return {
+            "error": "Shares must be greater than 0"
+        }
+
+    if data.average_price <= 0:
+
+        return {
+            "error": "Average price must be greater than 0"
         }
 
     stock.shares = data.shares
@@ -126,11 +155,13 @@ def portfolio_summary(
     total_value = sum(
         p.shares * p.average_price
         for p in portfolio
+        if p.symbol
     )
 
     total_shares = sum(
         p.shares
         for p in portfolio
+        if p.symbol
     )
 
     return {
@@ -149,6 +180,13 @@ def portfolio_summary(
 # LIVE STOCK PRICE
 @router.get("/price/{symbol}")
 def get_live_price(symbol: str):
+
+    symbol = symbol.strip().upper()
+
+    if symbol == "":
+        return {
+            "error": "Invalid symbol"
+        }
 
     price = get_stock_price(symbol)
 
@@ -182,6 +220,9 @@ def portfolio_valuation(
     total_current = 0
 
     for stock in holdings:
+
+        if not stock.symbol:
+            continue
 
         current_price = get_stock_price(
             stock.symbol
@@ -275,21 +316,25 @@ def dashboard_data(
 
     for stock in holdings:
 
+        if not stock.symbol:
+            continue
+
         current_price = get_stock_price(
             stock.symbol
         )
 
-        if current_price:
+        if current_price is None:
+            continue
 
-            total_invested += (
-                stock.shares *
-                stock.average_price
-            )
+        total_invested += (
+            stock.shares *
+            stock.average_price
+        )
 
-            total_current += (
-                stock.shares *
-                current_price
-            )
+        total_current += (
+            stock.shares *
+            current_price
+        )
 
     return {
 
