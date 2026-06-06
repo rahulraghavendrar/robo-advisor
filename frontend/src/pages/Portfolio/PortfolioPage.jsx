@@ -9,6 +9,8 @@ import AnimatedBackground from "../../components/ui/AnimatedBackground";
 
 import PortfolioTable from "../../components/portfolio/PortfolioTable";
 
+import AddStockForm from "../../components/portfolio/AddStockForm";
+
 import {
   getValuation,
 } from "../../services/portfolioApi";
@@ -135,6 +137,16 @@ function PortfolioPage() {
           </div>
 
         </div>
+
+        {/* ADD STOCK FORM */}
+
+        <AddStockForm
+          onStockAdded={
+            fetchPortfolio
+          }
+        />
+
+        {/* HOLDINGS TABLE */}
 
         <PortfolioTable
 
