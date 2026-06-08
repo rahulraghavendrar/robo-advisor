@@ -242,8 +242,9 @@ def portfolio_valuation(
         )
 
         pnl = current - invested
-
         portfolio_data.append({
+
+            "id": stock.id,
 
             "symbol": stock.symbol,
 
@@ -252,23 +253,23 @@ def portfolio_valuation(
             "avg_price": stock.average_price,
 
             "current_price": round(
-                current_price,
-                2
+                     current_price,
+                    2
             ),
 
             "invested": round(
-                invested,
-                2
+                    invested,
+                    2
             ),
 
             "current_value": round(
-                current,
-                2
+                    current,
+                    2
             ),
 
             "profit_loss": round(
-                pnl,
-                2
+                    pnl,
+                    2
             )
         })
 

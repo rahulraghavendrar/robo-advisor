@@ -1,13 +1,21 @@
 import { motion } from "framer-motion";
 
-function PortfolioTable({ holdings }) {
+function PortfolioTable({
+
+  holdings,
+
+  onDelete
+
+}) {
 
   return (
 
     <div className="bg-slate-900/50 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
 
       <h2 className="text-3xl font-bold mb-6">
+
         Portfolio Positions
+
       </h2>
 
       <div className="overflow-x-auto">
@@ -18,17 +26,33 @@ function PortfolioTable({ holdings }) {
 
             <tr className="text-left border-b border-white/10">
 
-              <th className="pb-4">Symbol</th>
+              <th className="pb-4">
+                Symbol
+              </th>
 
-              <th className="pb-4">Shares</th>
+              <th className="pb-4">
+                Shares
+              </th>
 
-              <th className="pb-4">Avg Price</th>
+              <th className="pb-4">
+                Avg Price
+              </th>
 
-              <th className="pb-4">Current Price</th>
+              <th className="pb-4">
+                Current Price
+              </th>
 
-              <th className="pb-4">Current Value</th>
+              <th className="pb-4">
+                Current Value
+              </th>
 
-              <th className="pb-4">Profit/Loss</th>
+              <th className="pb-4">
+                Profit/Loss
+              </th>
+
+              <th className="pb-4">
+                Actions
+              </th>
 
             </tr>
 
@@ -36,11 +60,11 @@ function PortfolioTable({ holdings }) {
 
           <tbody>
 
-            {holdings.map((stock,index)=>(
+            {holdings.map((stock)=>(
 
               <motion.tr
 
-                key={index}
+                key={stock.id}
 
                 whileHover={{
                   scale:1.01
@@ -50,23 +74,33 @@ function PortfolioTable({ holdings }) {
               >
 
                 <td className="py-5 font-bold">
+
                   {stock.symbol}
+
                 </td>
 
                 <td>
+
                   {stock.shares}
+
                 </td>
 
                 <td>
+
                   ${stock.avg_price}
+
                 </td>
 
                 <td>
+
                   ${stock.current_price}
+
                 </td>
 
                 <td>
+
                   ${stock.current_value}
+
                 </td>
 
                 <td
@@ -79,6 +113,25 @@ function PortfolioTable({ holdings }) {
                 >
 
                   ${stock.profit_loss}
+
+                </td>
+
+                <td>
+
+                  <button
+
+                    onClick={()=>
+                      onDelete(
+                        stock.id
+                      )
+                    }
+
+                    className="bg-red-500 hover:bg-red-400 px-4 py-2 rounded-xl font-bold"
+                  >
+
+                    Delete
+
+                  </button>
 
                 </td>
 

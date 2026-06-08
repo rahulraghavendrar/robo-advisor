@@ -13,25 +13,26 @@ import AddStockForm from "../../components/portfolio/AddStockForm";
 
 import {
   getValuation,
+  deleteStock,
 } from "../../services/portfolioApi";
 
 function PortfolioPage() {
 
-  const [portfolio,setPortfolio] =
+  const [portfolio, setPortfolio] =
     useState(null);
 
-  const [loading,setLoading] =
+  const [loading, setLoading] =
     useState(true);
 
-  useEffect(()=>{
+  useEffect(() => {
 
     fetchPortfolio();
 
-  },[]);
+  }, []);
 
-  const fetchPortfolio = async() => {
+  const fetchPortfolio = async () => {
 
-    try{
+    try {
 
       const response =
         await getValuation();
@@ -39,20 +40,43 @@ function PortfolioPage() {
       setPortfolio(
         response.data
       );
+
     }
 
-    catch(error){
+    catch (error) {
 
       console.log(error);
+
     }
 
-    finally{
+    finally {
 
       setLoading(false);
+
     }
   };
 
-  if(loading){
+  const handleDelete = async (id) => {
+
+    try {
+
+      await deleteStock(id);
+
+      await fetchPortfolio();
+
+    }
+
+    catch (error) {
+
+      console.log(error);
+
+      alert(
+        "Failed to delete stock"
+      );
+    }
+  };
+
+  if (loading) {
 
     return (
 
@@ -61,6 +85,7 @@ function PortfolioPage() {
         Loading Portfolio...
 
       </div>
+
     );
   }
 
@@ -79,6 +104,8 @@ function PortfolioPage() {
           Portfolio Holdings
 
         </h1>
+
+        {/* SUMMARY CARDS */}
 
         <div className="grid grid-cols-3 gap-6 mb-10">
 
@@ -126,7 +153,13 @@ function PortfolioPage() {
 
             </h2>
 
-            <p className="text-4xl font-bold mt-3 text-green-400">
+            <p
+              className={`text-4xl font-bold mt-3 ${
+                portfolio.profit_loss >= 0
+                  ? "text-green-400"
+                  : "text-red-400"
+              }`}
+            >
 
               $
 
@@ -138,7 +171,7 @@ function PortfolioPage() {
 
         </div>
 
-        {/* ADD STOCK FORM */}
+        {/* ADD STOCK */}
 
         <AddStockForm
           onStockAdded={
@@ -146,12 +179,16 @@ function PortfolioPage() {
           }
         />
 
-        {/* HOLDINGS TABLE */}
+        {/* PORTFOLIO TABLE */}
 
         <PortfolioTable
 
           holdings={
             portfolio.holdings
+          }
+
+          onDelete={
+            handleDelete
           }
 
         />
