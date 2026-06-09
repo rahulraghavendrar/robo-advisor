@@ -11,6 +11,8 @@ import PortfolioTable from "../../components/portfolio/PortfolioTable";
 
 import AddStockForm from "../../components/portfolio/AddStockForm";
 
+import EditStockModal from "../../components/portfolio/EditStockModal";
+
 import {
   getValuation,
   deleteStock,
@@ -23,6 +25,10 @@ function PortfolioPage() {
 
   const [loading, setLoading] =
     useState(true);
+
+  const [editingStock,
+  setEditingStock] =
+    useState(null);
 
   useEffect(() => {
 
@@ -74,6 +80,15 @@ function PortfolioPage() {
         "Failed to delete stock"
       );
     }
+  };
+
+  const handleEdit = (
+    stock
+  ) => {
+
+    setEditingStock(
+      stock
+    );
   };
 
   if (loading) {
@@ -179,7 +194,7 @@ function PortfolioPage() {
           }
         />
 
-        {/* PORTFOLIO TABLE */}
+        {/* HOLDINGS TABLE */}
 
         <PortfolioTable
 
@@ -191,7 +206,37 @@ function PortfolioPage() {
             handleDelete
           }
 
+          onEdit={
+            handleEdit
+          }
+
         />
+
+        {/* EDIT MODAL */}
+
+        {
+          editingStock && (
+
+            <EditStockModal
+
+              stock={
+                editingStock
+              }
+
+              onClose={() =>
+                setEditingStock(
+                  null
+                )
+              }
+
+              onUpdated={
+                fetchPortfolio
+              }
+
+            />
+
+          )
+        }
 
       </div>
 

@@ -4,7 +4,9 @@ function PortfolioTable({
 
   holdings,
 
-  onDelete
+  onDelete,
+
+  onEdit
 
 }) {
 
@@ -118,20 +120,37 @@ function PortfolioTable({
 
                 <td>
 
-                  <button
+                  <div className="flex gap-2">
 
-                    onClick={()=>
-                      onDelete(
-                        stock.id
-                      )
-                    }
+                    <button
 
-                    className="bg-red-500 hover:bg-red-400 px-4 py-2 rounded-xl font-bold"
-                  >
+                      onClick={()=>
+                        onEdit(stock)
+                      }
 
-                    Delete
+                      className="bg-cyan-500 hover:bg-cyan-400 px-4 py-2 rounded-xl font-bold"
+                    >
 
-                  </button>
+                      Edit
+
+                    </button>
+
+                    <button
+
+                      onClick={()=>
+                        onDelete(
+                          stock.id
+                        )
+                      }
+
+                      className="bg-red-500 hover:bg-red-400 px-4 py-2 rounded-xl font-bold"
+                    >
+
+                      Delete
+
+                    </button>
+
+                  </div>
 
                 </td>
 
