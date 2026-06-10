@@ -4,9 +4,24 @@ import AnimatedBackground from "../../components/ui/AnimatedBackground";
 
 import AnalyticsStat from "../../components/analytics/AnalyticsStat";
 
+import PortfolioChart from "../../charts/PortfolioChart";
+
+import PerformanceChart from "../../charts/PerformanceChart";
+
+import HoldingsBreakdown from "../../components/analytics/HoldingsBreakdown";
+
+import {
+
+  allocationData,
+
+  performanceData,
+
+} from "../../data/analyticsData";
+
 function AnalyticsPage() {
 
   return (
+
     <div className="min-h-screen bg-[#020617] text-white">
 
       <AnimatedBackground />
@@ -16,10 +31,14 @@ function AnalyticsPage() {
       <div className="ml-72 p-10 relative z-10">
 
         <h1 className="text-6xl font-black mb-10">
-          Advanced Analytics
+
+          Portfolio Analytics
+
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        {/* STATS */}
+
+        <div className="grid grid-cols-3 gap-8 mb-10">
 
           <AnalyticsStat
             title="Annual Return"
@@ -40,6 +59,24 @@ function AnalyticsPage() {
           />
 
         </div>
+
+        {/* CHARTS */}
+
+        <div className="grid grid-cols-2 gap-8 mb-10">
+
+          <PortfolioChart
+            data={allocationData}
+          />
+
+          <PerformanceChart
+            data={performanceData}
+          />
+
+        </div>
+
+        {/* HOLDINGS */}
+
+        <HoldingsBreakdown />
 
       </div>
 
