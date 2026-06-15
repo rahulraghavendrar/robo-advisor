@@ -361,3 +361,124 @@ def dashboard_data(
                 2
             )
     }
+@router.get("/analytics")
+def portfolio_analytics(
+    db: Session = Depends(get_db)
+):
+
+    holdings = db.query(
+        Portfolio
+    ).all()
+
+    allocation = []
+
+    total_value = 0
+
+    values = {}
+
+    for stock in holdings:
+
+        if not stock.symbol:
+            continue
+
+        current_price = get_stock_price(
+            stock.symbol
+        )
+
+        if current_price is None:
+            continue
+
+        current_value = (
+            stock.shares *
+            current_price
+        )
+
+        total_value += current_value
+
+        values[
+            stock.symbol
+        ] = current_value
+
+    if total_value == 0:
+
+        return {
+
+            "total_positions": 0,
+
+            "largest_holding": "N/A",
+
+            "largest_percentage": 0,
+
+            "diversification_score": 0,
+
+            "health": "No Data",
+
+            "allocation": []
+        }
+
+    for symbol,value in values.items():
+
+        percentage = round(
+
+            (value / total_value) * 100,
+
+            2
+        )
+
+        allocation.append({
+
+            "name": symbol,
+
+            "symbol": symbol,
+
+            "value": percentage,
+
+            "percentage": percentage
+        })
+
+    largest = max(
+        allocation,
+        key=lambda x: x["percentage"]
+    )
+
+    diversification_score = max(
+
+        0,
+
+        100 -
+        largest["percentage"]
+    )
+
+    health = (
+        "Excellent"
+        if diversification_score > 75
+        else
+        "Good"
+        if diversification_score > 50
+        else
+        "Risky"
+    )
+
+    return {
+
+        "total_positions":
+            len(allocation),
+
+        "largest_holding":
+            largest["symbol"],
+
+        "largest_percentage":
+            largest["percentage"],
+
+        "diversification_score":
+            round(
+                diversification_score,
+                2
+            ),
+
+        "health":
+            health,
+
+        "allocation":
+            allocation
+    }
