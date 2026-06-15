@@ -1,3 +1,8 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import Sidebar from "../../layout/Sidebar";
 
 import AnimatedBackground from "../../components/ui/AnimatedBackground";
@@ -6,19 +11,62 @@ import AnalyticsStat from "../../components/analytics/AnalyticsStat";
 
 import PortfolioChart from "../../charts/PortfolioChart";
 
-import PerformanceChart from "../../charts/PerformanceChart";
+import AllocationTable from "../../components/analytics/AllocationTable";
 
-import HoldingsBreakdown from "../../components/analytics/HoldingsBreakdown";
+import PortfolioHealthCard from "../../components/analytics/PortfolioHealthCard";
 
 import {
-
-  allocationData,
-
-  performanceData,
-
-} from "../../data/analyticsData";
+  getAnalytics,
+} from "../../services/portfolioApi";
 
 function AnalyticsPage() {
+
+  const [analytics,setAnalytics] =
+    useState(null);
+
+  const [loading,setLoading] =
+    useState(true);
+
+  useEffect(()=>{
+
+    fetchAnalytics();
+
+  },[]);
+
+  const fetchAnalytics = async() => {
+
+    try{
+
+      const response =
+        await getAnalytics();
+
+      setAnalytics(
+        response.data
+      );
+    }
+
+    catch(error){
+
+      console.log(error);
+    }
+
+    finally{
+
+      setLoading(false);
+    }
+  };
+
+  if(loading){
+
+    return (
+
+      <div className="h-screen flex items-center justify-center bg-[#020617] text-white">
+
+        Loading Analytics...
+
+      </div>
+    );
+  }
 
   return (
 
@@ -36,47 +84,55 @@ function AnalyticsPage() {
 
         </h1>
 
-        {/* STATS */}
-
         <div className="grid grid-cols-3 gap-8 mb-10">
 
           <AnalyticsStat
-            title="Annual Return"
-            value="+18.2%"
-            color="bg-green-500/10"
-          />
-
-          <AnalyticsStat
-            title="Sharpe Ratio"
-            value="1.92"
+            title="Positions"
+            value={analytics.total_positions}
             color="bg-cyan-500/10"
           />
 
           <AnalyticsStat
-            title="Volatility"
-            value="12%"
+            title="Largest Holding"
+            value={analytics.largest_holding}
+            color="bg-green-500/10"
+          />
+
+          <AnalyticsStat
+            title="Largest %"
+            value={`${analytics.largest_percentage}%`}
             color="bg-purple-500/10"
           />
 
         </div>
 
-        {/* CHARTS */}
-
         <div className="grid grid-cols-2 gap-8 mb-10">
 
           <PortfolioChart
-            data={allocationData}
+            data={analytics.allocation}
           />
 
-          <PerformanceChart
-            data={performanceData}
+          <PortfolioHealthCard
+
+            health={
+              analytics.health
+            }
+
+            diversification={
+              analytics.diversification_score
+            }
+
           />
 
         </div>
 
-        {/* HOLDINGS */}
+        <AllocationTable
 
-        <HoldingsBreakdown />
+          allocation={
+            analytics.allocation
+          }
+
+        />
 
       </div>
 

@@ -2,28 +2,35 @@ import axios from "axios";
 
 const API = axios.create({
 
-  baseURL: "http://127.0.0.1:8000"
+  baseURL:"http://127.0.0.1:8000"
 
 });
 
-export const getDashboardData = async () => {
+export const getDashboardData = async() => {
 
   return API.get(
     "/portfolio/dashboard"
   );
 };
 
-export const getPortfolio = async () => {
+export const getPortfolio = async() => {
 
   return API.get(
     "/portfolio/"
   );
 };
 
-export const getValuation = async () => {
+export const getValuation = async() => {
 
   return API.get(
     "/portfolio/valuation"
+  );
+};
+
+export const getAnalytics = async() => {
+
+  return API.get(
+    "/portfolio/analytics"
   );
 };
 
@@ -46,9 +53,7 @@ export const updateStock = async(
   );
 };
 
-export const deleteStock = async(
-  id
-) => {
+export const deleteStock = async(id) => {
 
   return API.delete(
     `/portfolio/delete/${id}`
