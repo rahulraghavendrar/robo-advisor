@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 
 const arrows = [
-  "📈",
-  "📉",
-  "📈",
-  "📉",
-  "📈",
-  "📉",
+  "↗",
+  "↘",
+  "↗",
+  "↘",
+  "↗",
+  "↘",
 ];
 
 function AnimatedBackground() {

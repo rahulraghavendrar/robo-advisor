@@ -1,4 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+)
+
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
@@ -7,8 +12,11 @@ from app.models.portfolio import Portfolio
 
 from app.schemas.portfolio_schema import PortfolioCreate
 from app.schemas.portfolio_update_schema import PortfolioUpdate
+from app.schemas.ai_schema import AIAdviceRequest
 
 from app.services.market_service import get_stock_price
+from app.services.ai_service import generate_portfolio_advice
+
 
 router = APIRouter(
     prefix="/portfolio",
@@ -200,7 +208,10 @@ def get_live_price(symbol: str):
 
         "symbol": symbol,
 
-        "price": round(price, 2)
+        "price": round(
+            price,
+            2
+        )
     }
 
 
@@ -242,6 +253,7 @@ def portfolio_valuation(
         )
 
         pnl = current - invested
+
         portfolio_data.append({
 
             "id": stock.id,
@@ -253,23 +265,23 @@ def portfolio_valuation(
             "avg_price": stock.average_price,
 
             "current_price": round(
-                     current_price,
-                    2
+                current_price,
+                2
             ),
 
             "invested": round(
-                    invested,
-                    2
+                invested,
+                2
             ),
 
             "current_value": round(
-                    current,
-                    2
+                current,
+                2
             ),
 
             "profit_loss": round(
-                    pnl,
-                    2
+                pnl,
+                2
             )
         })
 
@@ -361,6 +373,9 @@ def dashboard_data(
                 2
             )
     }
+
+
+# PORTFOLIO ANALYTICS
 @router.get("/analytics")
 def portfolio_analytics(
     db: Session = Depends(get_db)
@@ -416,7 +431,7 @@ def portfolio_analytics(
             "allocation": []
         }
 
-    for symbol,value in values.items():
+    for symbol, value in values.items():
 
         percentage = round(
 
@@ -452,9 +467,11 @@ def portfolio_analytics(
     health = (
         "Excellent"
         if diversification_score > 75
+
         else
         "Good"
         if diversification_score > 50
+
         else
         "Risky"
     )
@@ -481,4 +498,284 @@ def portfolio_analytics(
 
         "allocation":
             allocation
+    }
+
+
+# AI PORTFOLIO ADVISOR
+@router.post("/advice")
+def get_ai_advice(
+    data: AIAdviceRequest,
+    db: Session = Depends(get_db)
+):
+
+    question = data.question.strip()
+
+    if question == "":
+        raise HTTPException(
+            status_code=400,
+            detail="Question is required"
+        )
+
+    holdings = db.query(
+        Portfolio
+    ).all()
+
+    if not holdings:
+
+        return {
+
+            "advice":
+                "Your portfolio is empty. Add at least one stock position before requesting AI portfolio analysis.",
+
+            "portfolio": {
+
+                "positions": 0,
+
+                "total_invested": 0,
+
+                "current_value": 0,
+
+                "profit_loss": 0,
+
+                "allocation": []
+            }
+        }
+
+    portfolio_lines = []
+
+    total_invested = 0
+    total_current = 0
+
+    valid_positions = 0
+
+    for stock in holdings:
+
+        if not stock.symbol:
+            continue
+
+        current_price = get_stock_price(
+            stock.symbol
+        )
+
+        if current_price is None:
+            continue
+
+        invested = (
+            stock.shares *
+            stock.average_price
+        )
+
+        current_value = (
+            stock.shares *
+            current_price
+        )
+
+        profit_loss = (
+            current_value -
+            invested
+        )
+
+        total_invested += invested
+        total_current += current_value
+
+        valid_positions += 1
+
+        portfolio_lines.append({
+
+            "symbol":
+                stock.symbol,
+
+            "shares":
+                stock.shares,
+
+            "average_price":
+                round(
+                    stock.average_price,
+                    2
+                ),
+
+            "current_price":
+                round(
+                    current_price,
+                    2
+                ),
+
+            "invested":
+                round(
+                    invested,
+                    2
+                ),
+
+            "current_value":
+                round(
+                    current_value,
+                    2
+                ),
+
+            "profit_loss":
+                round(
+                    profit_loss,
+                    2
+                )
+        })
+
+    if valid_positions == 0:
+
+        return {
+
+            "advice":
+                "I could not retrieve live prices for your current holdings, so I cannot generate reliable portfolio analysis right now.",
+
+            "portfolio": {
+
+                "positions": 0,
+
+                "total_invested": 0,
+
+                "current_value": 0,
+
+                "profit_loss": 0,
+
+                "allocation": []
+            }
+        }
+
+    allocation = []
+
+    for holding in portfolio_lines:
+
+        percentage = (
+            holding["current_value"]
+            / total_current
+        ) * 100
+
+        allocation.append({
+
+            "symbol":
+                holding["symbol"],
+
+            "percentage":
+                round(
+                    percentage,
+                    2
+                )
+        })
+
+    portfolio_context = {
+
+        "positions":
+            valid_positions,
+
+        "total_invested":
+            round(
+                total_invested,
+                2
+            ),
+
+        "current_value":
+            round(
+                total_current,
+                2
+            ),
+
+        "profit_loss":
+            round(
+                total_current -
+                total_invested,
+                2
+            ),
+
+        "holdings":
+            portfolio_lines,
+
+        "allocation":
+            allocation
+    }
+
+    context_text = f"""
+Portfolio Summary:
+
+Total Positions:
+{portfolio_context["positions"]}
+
+Total Invested:
+${portfolio_context["total_invested"]}
+
+Current Portfolio Value:
+${portfolio_context["current_value"]}
+
+Total Profit/Loss:
+${portfolio_context["profit_loss"]}
+
+Holdings:
+"""
+
+    for holding in portfolio_lines:
+
+        context_text += f"""
+- {holding["symbol"]}
+  Shares: {holding["shares"]}
+  Average Price: ${holding["average_price"]}
+  Current Price: ${holding["current_price"]}
+  Invested: ${holding["invested"]}
+  Current Value: ${holding["current_value"]}
+  Profit/Loss: ${holding["profit_loss"]}
+"""
+
+    context_text += """
+Portfolio Allocation:
+"""
+
+    for item in allocation:
+
+        context_text += f"""
+- {item["symbol"]}: {item["percentage"]}%
+"""
+
+    try:
+
+        advice = generate_portfolio_advice(
+            portfolio_context=context_text,
+            user_question=question
+        )
+
+    except RuntimeError as error:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(error)
+        )
+
+    except Exception as error:
+
+        print(
+            f"Gemini request failed: {error}"
+        )
+
+        raise HTTPException(
+            status_code=502,
+            detail="Unable to generate AI portfolio advice"
+        )
+
+    return {
+
+        "advice": advice,
+
+        "portfolio": {
+
+            "positions":
+                portfolio_context["positions"],
+
+            "total_invested":
+                portfolio_context["total_invested"],
+
+            "current_value":
+                portfolio_context["current_value"],
+
+            "profit_loss":
+                portfolio_context["profit_loss"],
+
+            "allocation":
+                allocation
+        }
     }

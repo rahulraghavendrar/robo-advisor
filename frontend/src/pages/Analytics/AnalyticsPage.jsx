@@ -3,39 +3,64 @@ import {
   useState,
 } from "react";
 
-import Sidebar from "../../layout/Sidebar";
 
-import AnimatedBackground from "../../components/ui/AnimatedBackground";
+import Sidebar
+  from "../../layout/Sidebar";
 
-import AnalyticsStat from "../../components/analytics/AnalyticsStat";
 
-import PortfolioChart from "../../charts/PortfolioChart";
+import AnimatedBackground
+  from "../../components/ui/AnimatedBackground";
 
-import AllocationTable from "../../components/analytics/AllocationTable";
 
-import PortfolioHealthCard from "../../components/analytics/PortfolioHealthCard";
+import AnalyticsStat
+  from "../../components/analytics/AnalyticsStat";
+
+
+import PortfolioChart
+  from "../../charts/PortfolioChart";
+
+
+import AllocationTable
+  from "../../components/analytics/AllocationTable";
+
+
+import PortfolioHealthCard
+  from "../../components/analytics/PortfolioHealthCard";
+
+
+import AIAdvisor
+  from "../../components/analytics/AIAdvisor";
+
 
 import {
   getAnalytics,
 } from "../../services/portfolioApi";
 
+
 function AnalyticsPage() {
 
-  const [analytics,setAnalytics] =
-    useState(null);
+  const [
+    analytics,
+    setAnalytics
+  ] = useState(null);
 
-  const [loading,setLoading] =
-    useState(true);
 
-  useEffect(()=>{
+  const [
+    loading,
+    setLoading
+  ] = useState(true);
+
+
+  useEffect(() => {
 
     fetchAnalytics();
 
-  },[]);
+  }, []);
+
 
   const fetchAnalytics = async() => {
 
-    try{
+    try {
 
       const response =
         await getAnalytics();
@@ -43,20 +68,25 @@ function AnalyticsPage() {
       setAnalytics(
         response.data
       );
+
     }
 
-    catch(error){
+    catch(error) {
 
       console.log(error);
+
     }
 
-    finally{
+    finally {
 
       setLoading(false);
+
     }
+
   };
 
-  if(loading){
+
+  if(loading) {
 
     return (
 
@@ -65,8 +95,26 @@ function AnalyticsPage() {
         Loading Analytics...
 
       </div>
+
     );
+
   }
+
+
+  if(!analytics) {
+
+    return (
+
+      <div className="h-screen flex items-center justify-center bg-[#020617] text-red-400">
+
+        Unable to load analytics.
+
+      </div>
+
+    );
+
+  }
+
 
   return (
 
@@ -74,9 +122,12 @@ function AnalyticsPage() {
 
       <AnimatedBackground />
 
+
       <Sidebar />
 
+
       <div className="ml-72 p-10 relative z-10">
+
 
         <h1 className="text-6xl font-black mb-10">
 
@@ -84,33 +135,63 @@ function AnalyticsPage() {
 
         </h1>
 
+
         <div className="grid grid-cols-3 gap-8 mb-10">
 
+
           <AnalyticsStat
+
             title="Positions"
-            value={analytics.total_positions}
+
+            value={
+              analytics.total_positions
+            }
+
             color="bg-cyan-500/10"
+
           />
 
+
           <AnalyticsStat
+
             title="Largest Holding"
-            value={analytics.largest_holding}
+
+            value={
+              analytics.largest_holding
+            }
+
             color="bg-green-500/10"
+
           />
 
+
           <AnalyticsStat
+
             title="Largest %"
-            value={`${analytics.largest_percentage}%`}
+
+            value={
+              `${analytics.largest_percentage}%`
+            }
+
             color="bg-purple-500/10"
+
           />
+
 
         </div>
 
+
         <div className="grid grid-cols-2 gap-8 mb-10">
 
+
           <PortfolioChart
-            data={analytics.allocation}
+
+            data={
+              analytics.allocation
+            }
+
           />
+
 
           <PortfolioHealthCard
 
@@ -124,20 +205,33 @@ function AnalyticsPage() {
 
           />
 
+
         </div>
 
-        <AllocationTable
 
-          allocation={
-            analytics.allocation
-          }
+        <div className="mb-10">
 
-        />
+          <AllocationTable
+
+            allocation={
+              analytics.allocation
+            }
+
+          />
+
+        </div>
+
+
+        <AIAdvisor />
+
 
       </div>
 
     </div>
+
   );
+
 }
+
 
 export default AnalyticsPage;
